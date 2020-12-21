@@ -1,0 +1,27 @@
+version: '2'
+
+services:
+  database:
+    image: postgres:13.0-alpine
+    expose: 
+      - '5432'
+    env_file:
+      - database.env
+    volumes:
+      - database-data:/var/lib/postgresql/data/
+    
+  backend:
+    build: .
+    image: django_backend_image
+    env_file:
+    - database.env
+    ports:
+      - '8000:8000'
+    volumes:
+      - .:/app_backend
+    depends_on:
+      - database
+    entrypoint: ["bash", "-c", "./wait-for-it.sh database:5432 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+
+volumes: 
+    database-data: {}
